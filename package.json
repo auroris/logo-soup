@@ -18,9 +18,8 @@
     "src"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target browser --format esm --sourcemap=external && bun build src/index.ts --outfile dist/index.cjs --target browser --format cjs --sourcemap=inline && bun run build:types",
+    "build": "bun build src/global.ts --outfile dist/logo-soup.min.js --target browser --minify && bun build src/index.ts --outdir dist --target browser --format esm --sourcemap=external && bun run build:types",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
-    "prepublishOnly": "bun run build",
     "test": "bun test"
   },
   "repository": {
