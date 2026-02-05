@@ -34,32 +34,33 @@ export async function processLogos(
   }
 
   const sources: LogoSource[] = logos.map(normalizeSource);
-  const results: NormalizedLogo[] = [];
 
-  for (const source of sources) {
-    const img = await loadImage(source.src);
-    const measurement = measureWithContentDetection(
-      img,
-      contrastThreshold,
-      densityAware,
-    );
+  const results = await Promise.all(
+    sources.map(async (source) => {
+      const img = await loadImage(source.src);
+      const measurement = measureWithContentDetection(
+        img,
+        contrastThreshold,
+        densityAware,
+      );
 
-    const effectiveDensityFactor = densityAware ? densityFactor : 0;
+      const effectiveDensityFactor = densityAware ? densityFactor : 0;
 
-    const normalized = createNormalizedLogo(
-      source,
-      measurement,
-      baseSize,
-      scaleFactor,
-      effectiveDensityFactor,
-    );
+      const normalized = createNormalizedLogo(
+        source,
+        measurement,
+        baseSize,
+        scaleFactor,
+        effectiveDensityFactor,
+      );
 
-    if (cropToContent && measurement.contentBox) {
-      normalized.croppedSrc = cropToDataUrl(img, measurement.contentBox);
-    }
+      if (cropToContent && measurement.contentBox) {
+        normalized.croppedSrc = cropToDataUrl(img, measurement.contentBox);
+      }
 
-    results.push(normalized);
-  }
+      return normalized;
+    }),
+  );
 
   return results;
 }
