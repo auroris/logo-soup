@@ -1,64 +1,62 @@
-# 🍜 React Logo Soup
+# Logo Soup
 
-A tiny React library that makes logos look good together.
+A tiny library that makes logos look good together. No framework required.
 
 ## The Problem
 
 Real-world logos are messy. Some have padding, some don't. Some are dense and blocky, others are thin and airy. Put them in a row and they look chaotic.
 
-React Logo Soup fixes this automatically.
+Logo Soup fixes this automatically.
 
 ## Getting Started
 
 ```bash
-npm install react-logo-soup
+npm install logo-soup
 ```
 
-```tsx
-import { LogoSoup } from "react-logo-soup";
+```js
+import { createLogoSoup } from "logo-soup";
 
-function LogoStrip() {
-  return (
-    <LogoSoup
-      logos={["/logos/acme.svg", "/logos/globex.svg", "/logos/initech.svg"]}
-    />
-  );
-}
+const el = await createLogoSoup({
+  logos: ["/logos/acme.svg", "/logos/globex.svg", "/logos/initech.svg"],
+});
+
+document.body.appendChild(el);
 ```
 
-That's it! React Logo Soup will analyze each logo and normalize them to look visually balanced.
+That's it! Logo Soup will analyze each logo and normalize them to look visually balanced. The returned element is a `<div>` you can append anywhere. Need an HTML string instead? Use `el.outerHTML`.
 
 ## Options
 
 ### `gap`
 
-Space between logos. Default is `16`.
+Space between logos. Default is `28`.
 
-```tsx
-<LogoSoup logos={logos} gap={24} />
+```js
+const el = await createLogoSoup({ logos, gap: 24 });
 ```
 
 ### `baseSize`
 
 How big the logos should be, in pixels. Default is `48`.
 
-```tsx
-<LogoSoup logos={logos} baseSize={64} />
+```js
+const el = await createLogoSoup({ logos, baseSize: 64 });
 ```
 
 ### `densityAware` and `densityFactor`
 
-React Logo Soup measures the "visual weight" of each logo. Dense, solid logos get scaled down. Light, thin logos get scaled up. This is on by default.
+Logo Soup measures the "visual weight" of each logo. Dense, solid logos get scaled down. Light, thin logos get scaled up. This is on by default.
 
-- `densityAware={false}` — Turn it off
+- `densityAware: false` — Turn it off
 - `densityFactor` — How strong the effect is (0 = off, 0.5 = default, 1 = strong)
 
-```tsx
+```js
 // Stronger density compensation
-<LogoSoup logos={logos} densityFactor={0.8} />
+const el = await createLogoSoup({ logos, densityFactor: 0.8 });
 
 // Turn it off
-<LogoSoup logos={logos} densityAware={false} />
+const el = await createLogoSoup({ logos, densityAware: false });
 ```
 
 ### `scaleFactor`
@@ -85,8 +83,8 @@ Imagine you have two logos:
 - Neither gets too wide nor too tall
 - Looks most natural
 
-```tsx
-<LogoSoup logos={logos} scaleFactor={0.5} />
+```js
+const el = await createLogoSoup({ logos, scaleFactor: 0.5 });
 ```
 
 ### `alignBy`
@@ -98,91 +96,95 @@ How to align logos. Default is `"bounds"`.
 - `"visual-center-x"` — Align by visual weight center horizontally only
 - `"visual-center-y"` — Align by visual weight center vertically only
 
-```tsx
-<LogoSoup logos={logos} alignBy="visual-center" />
+```js
+const el = await createLogoSoup({ logos, alignBy: "visual-center" });
 ```
 
 ### `cropToContent`
 
 When enabled, logos are cropped to their content bounds and returned as base64 images. This removes any whitespace/padding baked into the original image files. Default is `false`.
 
-```tsx
-<LogoSoup logos={logos} cropToContent />
+```js
+const el = await createLogoSoup({ logos, cropToContent: true });
 ```
 
-## Using the Hook
+### `className` and `style`
 
-For custom layouts, use the `useLogoSoup` hook directly:
+Apply a CSS class or inline styles to the container `<div>`.
 
-```tsx
-import { useLogoSoup } from "react-logo-soup";
+```js
+const el = await createLogoSoup({
+  logos,
+  className: "logo-strip",
+  style: { maxWidth: "800px" },
+});
+```
 
-function CustomGrid() {
-  const { isLoading, normalizedLogos } = useLogoSoup({
-    logos: ["/logo1.svg", "/logo2.svg"],
-  });
+## Using `processLogos` Directly
 
-  if (isLoading) return <div>Loading...</div>;
+For custom layouts, use `processLogos` to get the normalized data without any DOM output:
 
-  return (
-    <div className="grid">
-      {normalizedLogos.map((logo) => (
-        <img
-          key={logo.src}
-          src={logo.src}
-          width={logo.normalizedWidth}
-          height={logo.normalizedHeight}
-        />
-      ))}
-    </div>
-  );
+```js
+import { processLogos } from "logo-soup";
+
+const normalizedLogos = await processLogos({
+  logos: ["/logo1.svg", "/logo2.svg"],
+});
+
+for (const logo of normalizedLogos) {
+  console.log(logo.src, logo.normalizedWidth, logo.normalizedHeight);
 }
 ```
+
+Each `NormalizedLogo` includes:
+
+- `src`, `alt` — Original source and alt text
+- `originalWidth`, `originalHeight` — Original image dimensions
+- `normalizedWidth`, `normalizedHeight` — Calculated display dimensions
+- `aspectRatio` — Content aspect ratio
+- `contentBox` — Detected content bounding box
+- `pixelDensity` — Visual weight (0–1)
+- `visualCenter` — Weighted center of mass with offsets
+- `croppedSrc` — Base64 data URL (when `cropToContent` is enabled)
 
 ### `getVisualCenterTransform`
 
-When using the hook, you can apply visual center alignment with the `getVisualCenterTransform` helper:
+When using `processLogos`, you can apply visual center alignment with the `getVisualCenterTransform` helper:
 
-```tsx
-import { useLogoSoup, getVisualCenterTransform } from "react-logo-soup";
+```js
+import { processLogos, getVisualCenterTransform } from "logo-soup";
 
-function CustomGrid() {
-  const { normalizedLogos } = useLogoSoup({ logos });
+const logos = await processLogos({ logos: sources });
 
-  return (
-    <div className="grid">
-      {normalizedLogos.map((logo) => (
-        <img
-          key={logo.src}
-          src={logo.src}
-          width={logo.normalizedWidth}
-          height={logo.normalizedHeight}
-          style={{ transform: getVisualCenterTransform(logo, "visual-center") }}
-        />
-      ))}
-    </div>
-  );
+for (const logo of logos) {
+  const img = document.createElement("img");
+  img.src = logo.src;
+  img.width = logo.normalizedWidth;
+  img.height = logo.normalizedHeight;
+  img.style.transform = getVisualCenterTransform(logo, "visual-center") || "";
+  container.appendChild(img);
 }
 ```
 
-## Custom Image Component
+## Custom Image Rendering
 
-Use with Next.js Image or any custom component:
+Use `renderImage` to control how each logo element is created:
 
-```tsx
-import Image from "next/image";
-
-<LogoSoup
-  logos={logos}
-  renderImage={(props) => (
-    <Image
-      src={props.src}
-      alt={props.alt}
-      width={props.width}
-      height={props.height}
-    />
-  )}
-/>;
+```js
+const el = await createLogoSoup({
+  logos,
+  renderImage: (props) => {
+    const picture = document.createElement("picture");
+    const img = document.createElement("img");
+    img.src = props.src;
+    img.alt = props.alt;
+    img.width = props.width;
+    img.height = props.height;
+    Object.assign(img.style, props.style);
+    picture.appendChild(img);
+    return picture;
+  },
+});
 ```
 
 ## How It Works
@@ -198,7 +200,7 @@ All processing happens client-side using canvas. No AI, fully deterministic.
 ```bash
 bun install
 bun test
-bun run storybook
+bun run build
 ```
 
 ## License
