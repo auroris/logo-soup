@@ -2,6 +2,8 @@
 
 A tiny library that makes logos look good together. No framework required.
 
+This project is based on code originally developed by [Rostislav Melkumyan](https://www.sanity.io/blog/the-logo-soup-problem). See the [original repository](https://github.com/sanity-labs/react-logo-soup) for the initial implementation.
+
 ## The Problem
 
 Real-world logos are messy. Some have padding, some don't. Some are dense and blocky, others are thin and airy. Put them in a row and they look chaotic.
