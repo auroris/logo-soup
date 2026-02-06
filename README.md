@@ -6,7 +6,7 @@ A tiny library that makes logos look good together. No framework required.
 
 Real-world logos are messy. Some have padding, some don't. Some are dense and blocky, others are thin and airy. Put them in a row and they look chaotic.
 
-Logo Soup fixes this automatically.
+Logo Soup [fixes this automatically](https://logo-soup.aurorisnet.workers.dev/).
 
 ## Getting Started
 
